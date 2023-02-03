@@ -24,7 +24,31 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-/** @var stdClass $plugin */
-$plugin->component = 'local_miguelplugin';
-$plugin->version = 2022020300;     // The current module version (Date: YYYYMMDDXX).
-$plugin->requires = 2020061519;    // Requires this Moodle version.
+/**
+ * Execute miguelplugin upgrade from the given old version
+ *
+ * @param    int $oldversion
+ * @return   bool
+ */
+
+function xmldb_local_miguelplugin_upgrade( $oldversion ){
+    global $DB;
+
+    $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
+
+    if ($oldversion < 2022020300) {
+
+        // Define field direccion to be added to local_miguelplugin.
+        $table = new xmldb_table('local_miguelplugin');
+        $field = new xmldb_field('direccion', XMLDB_TYPE_CHAR, '200', null, null, null, null, 'edad');
+
+        // Conditionally launch add field direccion.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Miguelplugin savepoint reached.
+        upgrade_plugin_savepoint(true, 2022020300, 'local', 'miguelplugin');
+    }
+}
+

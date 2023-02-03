@@ -10,6 +10,7 @@
         <FIELD NAME="nombre" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="nombre del usuario"/>
         <FIELD NAME="apellido" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Apellido del usuario"/>
         <FIELD NAME="edad" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="direccion" TYPE="char" LENGTH="200" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
