@@ -26,8 +26,11 @@ require_once(dirname(__FILE__, 4).'/config.php');
 
 require_login();
 
+require_once($CFG->libdir.'/tablelib.php');
+
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
+/** @var core_renderer $OUTPUT */
 global $PAGE, $OUTPUT, $CFG, $COURSE, $DB;
 
 /*
@@ -39,51 +42,77 @@ $plugin_url = new moodle_url('/local/miguelplugin/pages/formulario.php', array('
 $context = context_course::instance($courseid);*/
 
 $id = optional_param('id', 0, PARAM_INT);
+$download = optional_param('download', '', PARAM_ALPHA);
 
-$plugin_url = new moodle_url('/local/miguelplugin/pages/formulario.php', array('id' => $id));
+$url = new moodle_url('/local/miguelplugin/pages/formulario.php', array('id' => $id));
 $context = context_system::instance();
 
-
+// Page config
 $PAGE->set_context($context);
-$PAGE->set_url($plugin_url);
+$PAGE->set_url($url);
 $PAGE->set_heading('Prueba formulario');
 
+//Formulario
 $form = new \local_miguelplugin\form\course(null, ['id' => $id]);
 
 if ( $form->is_cancelled()){
-
     redirect($CFG->wwwroot);
-
 }
 
-/** @var core_renderer $OUTPUT */
-echo $OUTPUT->header();
 
-$data = $form->get_data();
-if ( $data ) {
 
-    $exist = $DB->record_exists('local_miguelplugin', ['id' => $id]);
-    if ( $exist ){
-        $update = $DB->update_record('local_miguelplugin', $data);
-    } else {
-        $insert = $DB->insert_record('local_miguelplugin', $data);
+
+//Sql query
+$select = "id, nombre, apellido, edad, direccion, 'edit' as edit";
+$from = '{local_miguelplugin}';
+$where = '1=1';
+
+$table = new \local_miguelplugin\table\custom('miguelpluginreport');
+$table->define_baseurl($url);
+$table->set_sql($select, $from, $where);
+$table->define_columns(['nombre', 'apellido', 'edad', 'direccion', 'edit']);
+$table->define_headers(['Nombre', 'Apellido', 'Edad', 'Direccion', 'Edit']);
+$table->downloadable = true;
+$table->is_downloading($download, 'reportecustom', 'reportexcel');
+
+if (!$table->is_downloading()) {
+    // Start print page
+    echo $OUTPUT->header();
+
+    $data = $form->get_data();
+    if ( $data ) {
+
+        $exist = $DB->record_exists('local_miguelplugin', ['id' => $id]);
+        if ( $exist ){
+            $update = $DB->update_record('local_miguelplugin', $data);
+        } else {
+            $insert = $DB->insert_record('local_miguelplugin', $data);
+        }
+        
     }
-    
+
+    $form->display();
+
+    /*
+    $usuarios = $DB->get_records('local_miguelplugin');
+
+    foreach ( $usuarios as $usuario) {
+        echo html_writer::span($usuario->nombre). ' | ';
+        echo html_writer::span($usuario->apellido). ' | ';
+        echo html_writer::span($usuario->edad). ' | ';
+        echo html_writer::span($usuario->direccion). ' | ';
+        echo html_writer::span(
+            html_writer::link(new moodle_url('/local/miguelplugin/pages/formulario.php', array('id' => $usuario->id)), 'editar')
+        );
+        echo html_writer::tag('br','');
+    }
+    */
 }
 
-$form->display();
 
-$usuarios = $DB->get_records('local_miguelplugin');
+$table->out(10, false);
 
-foreach ( $usuarios as $usuario) {
-    echo html_writer::span($usuario->nombre). ' | ';
-    echo html_writer::span($usuario->apellido). ' | ';
-    echo html_writer::span($usuario->edad). ' | ';
-    echo html_writer::span($usuario->direccion). ' | ';
-    echo html_writer::span(
-        html_writer::link(new moodle_url('/local/miguelplugin/pages/formulario.php', array('id' => $usuario->id)), 'editar')
-    );
-    echo html_writer::tag('br','');
+if (!$table->is_downloading()) {
+    echo $OUTPUT->footer();
 }
-
-echo $OUTPUT->footer();
+// End print page
