@@ -23,21 +23,61 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
+require_login();
 
-global $PAGE, $OUTPUT, $CFG;
+/** @var moodle_database $DB */
+/** @var core_renderer $OUTPUT */
+global $PAGE, $OUTPUT, $CFG, $DB;
+
 $context = context_system::instance();
 $plugin_url = new moodle_url('/local/miguelplugin/view.php');
-
-require_login();
+$config = get_config('local_miguelplugin');
 
 require_capability('local/user_custom_report:managereport', $context);
 
 $PAGE->set_url($plugin_url);
-
 $PAGE->set_context($context);
 
-/** @var core_renderer $OUTPUT */
+$data = $DB->get_records('local_miguelplugin', array('nombre' => 'Miguel', 'edad' => 25));
+$data2 = $DB->get_record('local_miguelplugin', array('nombre' => 'Miguel'));
+$data3 = $DB->get_records_sql("select * from {local_miguelplugin}");
+$data4 = $DB->get_records_select('local_miguelplugin', 'nombre = ? or nombre = ?', ['Pepe','Miguel'], 'id', 'nombre,apellido');
+
+//Objeto
+$datainsert = new stdClass();
+$datainsert->nombre = "Juan";
+$datainsert->apellido = "Martinez";
+
+//Obejeto 2
+$datainsert2 = (object)[
+    "nombre" => "Carlos",
+    "apellido" => "Romero",
+    "direccion" => "calle false 123"
+];
+
+//$insert = $DB->insert_record('local_miguelplugin', $datainsert2);
+
+$dataupdate = (object)[
+    "id" => 2,
+    "nombre" => "Juanito",
+    "apellido" => "Perales",
+];
+//$update = $DB->update_record('local_miguelplugin', $dataupdate);
+
+//$delete =  $DB->delete_records('local_miguelplugin',["nombre" => "Carlos"]);
+
 echo $OUTPUT->header();
+
+var_dump($data4);
+
+if (has_capability('local/user_custom_report:managereport', $context)){
+    echo "Tengo permisos";
+} else {
+    echo "No tengo permisos";
+}
+
+#echo html_writer::div($config->lista, 'lista', array('data-list' => '1,2'));
+echo html_writer::div('i', 'test', array('class' => 'testi'));
 
 echo "Hola mundo";
 

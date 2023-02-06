@@ -24,24 +24,65 @@
 
 namespace local_miguelplugin\form;
 
+
 global $CFG;
 
 require_once($CFG->libdir.'/formslib.php');
 
 class course extends \moodleform{
 
-    public function definition(){
-
-        $custom = $this->_customdata;
+    public function definition()
+    {
+        /** @var moodle_database $DB */
+        global $DB;
 
         $mform = $this->_form;
-
-        $mform->addElement('text', 'name', 'Nombre');
-
-        $mform->setType('name', PARAM_TEXT);
+        $custom = $this->_customdata;
+        $usuarioid = $custom['id'];
+        $userobject = $DB->get_record('local_miguelplugin', ['id' => $usuarioid]);
         
-        $mform->setDefault('name',$custom["coursename"]);
+
+        $mform->addElement('text', 'nombre', 'Nombre');
+        $mform->setType('nombre', PARAM_RAW);
+
+        $mform->addElement('text', 'apellido', 'Apellido');
+        $mform->setType('apellido', PARAM_RAW);
+        
+        $mform->addElement('text', 'edad', 'Edad');
+        $mform->setType('edad', PARAM_RAW);
+        
+        $mform->addElement('text', 'direccion', 'Direccion');
+        $mform->setType('direccion', PARAM_RAW);
+        
+        $mform->addElement('hidden', 'id');
+        $mform->setDefault('id',$usuarioid);
+        $mform->setType('id', PARAM_INT);
+
+        if ( !empty($userobject) ) { 
+            $mform->setDefault('nombre', $userobject->nombre);
+            $mform->setDefault('apellido', $userobject->apellido);
+            $mform->setDefault('edad', $userobject->edad);
+            $mform->setDefault('direccion', $userobject->direccion);
+        }
 
         $this->add_action_buttons(true,'Accionar');
+    }
+
+    public function validation($data, $files)
+    {
+        $errors = [];
+        if (!is_numeric($data['edad'])) {
+            $errors['edad'] = 'Debe ser númerica';
+        }
+
+        if (empty($data['nombre'])) {
+            $errors['nombre'] = 'Este campo es obligatorio';
+        }
+
+        if (empty($data['apellido'])) {
+            $errors['apellido'] = 'Este campo es obligatorio';
+        }
+
+        return $errors;
     }
 }

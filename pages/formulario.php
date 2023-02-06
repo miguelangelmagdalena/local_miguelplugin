@@ -26,23 +26,29 @@ require_once(dirname(__FILE__, 4).'/config.php');
 
 require_login();
 
+/** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
-global $PAGE, $OUTPUT, $CFG;
+global $PAGE, $OUTPUT, $CFG, $COURSE, $DB;
 
-
-
-$courseid = optional_param("courseid", 0, PARAM_INT);
+/*
+$courseid = optional_param('courseid', 0, PARAM_INT);
+if( empty($courseid) ){ $courseid = 2; }
 $course = get_course($courseid);
 
 $plugin_url = new moodle_url('/local/miguelplugin/pages/formulario.php', array('courseid' => $courseid));
-$context = context_course::instance($courseid);
+$context = context_course::instance($courseid);*/
+
+$id = optional_param('id', 0, PARAM_INT);
+
+$plugin_url = new moodle_url('/local/miguelplugin/pages/formulario.php', array('id' => $id));
+$context = context_system::instance();
+
 
 $PAGE->set_context($context);
-$PAGE->set_course($course);
 $PAGE->set_url($plugin_url);
 $PAGE->set_heading('Prueba formulario');
 
-$form = new \local_miguelplugin\form\course(null,["coursename" => $course->shortname]);
+$form = new \local_miguelplugin\form\course(null, ['id' => $id]);
 
 if ( $form->is_cancelled()){
 
@@ -53,17 +59,31 @@ if ( $form->is_cancelled()){
 /** @var core_renderer $OUTPUT */
 echo $OUTPUT->header();
 
-echo "Hola mundo ".$course->fullname." ";
+$data = $form->get_data();
+if ( $data ) {
 
-if ( $data = $form->get_data()){
-
-    var_dump($data);
-
-} else {
-
-    $form->display();
-
+    $exist = $DB->record_exists('local_miguelplugin', ['id' => $id]);
+    if ( $exist ){
+        $update = $DB->update_record('local_miguelplugin', $data);
+    } else {
+        $insert = $DB->insert_record('local_miguelplugin', $data);
+    }
+    
 }
 
+$form->display();
+
+$usuarios = $DB->get_records('local_miguelplugin');
+
+foreach ( $usuarios as $usuario) {
+    echo html_writer::span($usuario->nombre). ' | ';
+    echo html_writer::span($usuario->apellido). ' | ';
+    echo html_writer::span($usuario->edad). ' | ';
+    echo html_writer::span($usuario->direccion). ' | ';
+    echo html_writer::span(
+        html_writer::link(new moodle_url('/local/miguelplugin/pages/formulario.php', array('id' => $usuario->id)), 'editar')
+    );
+    echo html_writer::tag('br','');
+}
 
 echo $OUTPUT->footer();
