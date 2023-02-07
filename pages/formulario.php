@@ -22,16 +22,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__, 4).'/config.php');
+require_once(dirname(__FILE__, 4) . '/config.php');
 
 require_login();
 
-require_once($CFG->libdir.'/tablelib.php');
+require_once($CFG->libdir . '/tablelib.php');
 
 /** @var moodle_database $DB */
 /** @var moodle_page $PAGE */
 /** @var core_renderer $OUTPUT */
-global $PAGE, $OUTPUT, $CFG, $COURSE, $DB;
+global $PAGE, $OUTPUT, $CFG, $COURSE, $DB, $USER;
 
 /*
 $courseid = optional_param('courseid', 0, PARAM_INT);
@@ -55,12 +55,9 @@ $PAGE->set_heading('Prueba formulario');
 //Formulario
 $form = new \local_miguelplugin\form\course(null, ['id' => $id]);
 
-if ( $form->is_cancelled()){
+if ($form->is_cancelled()) {
     redirect($CFG->wwwroot);
 }
-
-
-
 
 //Sql query
 $select = "id, nombre, apellido, edad, direccion, 'edit' as edit";
@@ -80,15 +77,24 @@ if (!$table->is_downloading()) {
     echo $OUTPUT->header();
 
     $data = $form->get_data();
-    if ( $data ) {
+    if ($data) {
 
-        $exist = $DB->record_exists('local_miguelplugin', ['id' => $id]);
-        if ( $exist ){
+        $exist = $DB->record_exists('local_miguelplugin', ['id' => $data->id]);
+        if ($exist) {
             $update = $DB->update_record('local_miguelplugin', $data);
+            $event = \local_miguelplugin\event\formulario_edited::create(
+                array(
+                    'context' => $context,
+                    'other' => [
+                        'username' => $USER->username,
+                        'registro' => $data->id
+                    ]
+                )
+            );
+            $event->trigger();
         } else {
             $insert = $DB->insert_record('local_miguelplugin', $data);
         }
-        
     }
 
     $form->display();

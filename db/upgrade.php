@@ -32,11 +32,13 @@ defined('MOODLE_INTERNAL') || die();
  */
 
 function xmldb_local_miguelplugin_upgrade( $oldversion ){
-    global $DB;
-
-    $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
+    
 
     if ($oldversion < 2022020300) {
+
+        global $DB;
+
+        $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 
         // Define field direccion to be added to local_miguelplugin.
         $table = new xmldb_table('local_miguelplugin');
@@ -50,5 +52,7 @@ function xmldb_local_miguelplugin_upgrade( $oldversion ){
         // Miguelplugin savepoint reached.
         upgrade_plugin_savepoint(true, 2022020300, 'local', 'miguelplugin');
     }
+
+    return true;
 }
 
