@@ -30,4 +30,17 @@ class custom extends \table_sql {
 
     }
 
+    public function col_borrar ($row){
+
+        if ($this->is_downloading()) {
+            return '';
+        }
+        return html_writer::link( 
+            new \moodle_url('/local/miguelplugin/pages/formulario.php', 
+            array('delete' => $row->id)), 
+            'borrar'
+        );
+
+    }
+
 }

@@ -43,6 +43,8 @@ $context = context_course::instance($courseid);*/
 
 $id = optional_param('id', 0, PARAM_INT);
 $download = optional_param('download', '', PARAM_ALPHA);
+$delete = optional_param('delete', 0, PARAM_INT);
+$confirm = optional_param('confirm', 0, PARAM_INT);
 
 $url = new moodle_url('/local/miguelplugin/pages/formulario.php', array('id' => $id));
 $context = context_system::instance();
@@ -52,6 +54,11 @@ $PAGE->set_context($context);
 $PAGE->set_url($url);
 $PAGE->set_heading('Prueba formulario');
 
+//Import JS
+$PAGE->requires->js_call_amd('local_miguelplugin/main', 'init', 
+    [['username' => $USER->username, 'id' => $USER->id]]);
+//$PAGE->requires->js_call_amd('local_miguelplugin/alert', 'showalert');
+
 //Formulario
 $form = new \local_miguelplugin\form\course(null, ['id' => $id]);
 
@@ -60,15 +67,16 @@ if ($form->is_cancelled()) {
 }
 
 //Sql query
-$select = "id, nombre, apellido, edad, direccion, 'edit' as edit";
+$select = "id, nombre, apellido, edad, direccion, 'edit' as edit, 'delete' as borrar";
 $from = '{local_miguelplugin}';
 $where = '1=1';
 
+//Table definintion
 $table = new \local_miguelplugin\table\custom('miguelpluginreport');
 $table->define_baseurl($url);
 $table->set_sql($select, $from, $where);
-$table->define_columns(['nombre', 'apellido', 'edad', 'direccion', 'edit']);
-$table->define_headers(['Nombre', 'Apellido', 'Edad', 'Direccion', 'Edit']);
+$table->define_columns(['nombre', 'apellido', 'edad', 'direccion', 'edit', 'borrar']);
+$table->define_headers(['Nombre', 'Apellido', 'Edad', 'Direccion', 'Edit', 'Borrar']);
 $table->downloadable = true;
 $table->is_downloading($download, 'reportecustom', 'reportexcel');
 
@@ -97,7 +105,27 @@ if (!$table->is_downloading()) {
         }
     }
 
-    $form->display();
+    if(empty($delete)){
+        $form->display();
+        echo $OUTPUT->render_from_template('local_miguelplugin/tabla', []);
+    }
+    if(!empty($confirm)){
+        echo $OUTPUT->notification(sprintf('El registro con id %d ha sido borrado', $confirm));
+        $DB->delete_records('local_miguelplugin', array('id' => $confirm));
+    }
+
+    if(empty($delete)){
+        $table->out(5,false);
+    } else {
+        $registro = $DB->get_record('local_miguelplugin', array('id' => $delete));
+        echo $OUTPUT->confirm(
+            'Esta seguro de borrar al usuario ' . $registro->nombre . '?',
+            new moodle_url('/local/miguelplugin/pages/formulario.php', array('confirm' => $registro->id)),
+            new moodle_url('/local/miguelplugin/pages/formulario.php')
+        );
+    }
+
+
 
     /*
     $usuarios = $DB->get_records('local_miguelplugin');
@@ -116,7 +144,7 @@ if (!$table->is_downloading()) {
 }
 
 
-$table->out(10, false);
+
 
 if (!$table->is_downloading()) {
     echo $OUTPUT->footer();

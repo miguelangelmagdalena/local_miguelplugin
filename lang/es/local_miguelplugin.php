@@ -23,3 +23,4 @@
 $string['pluginname'] = 'Extensión Miguel';
 $string['miguelplugin:viewpage'] = 'Ver Página';
 $string['miguelplugin:deletepage'] = 'Eliminar Página';
+$string['schedulename'] = 'Tarea programada de prueba miguelplugin';

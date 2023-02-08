@@ -23,3 +23,4 @@
 $string['pluginname'] = 'Miguel Plugin';
 $string['miguelplugin:viewpage'] = 'View Page';
 $string['miguelplugin:deletepage'] = 'Delete Page';
+$string['schedulename'] = 'Task in miguelplugin';
