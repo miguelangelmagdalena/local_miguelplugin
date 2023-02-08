@@ -1,1 +1,13 @@
-<h1>Hola mundo</h1>
+<h1>
+    {{#str}} pluginname, local_miguelplugin {{/str}}
+    {{#pix}} t/edit, core, Icono{{/pix}}
+</h1>
+{{#datos}}
+    <p><span>{{nombre}}</span> <span>{{apellido}}</span></p>
+{{/datos}}
+
+{{{html}}}
+
+{{#booleano}}
+<h2>Es verdadero</h2>
+{{/booleano}}

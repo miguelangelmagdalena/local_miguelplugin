@@ -107,7 +107,15 @@ if (!$table->is_downloading()) {
 
     if(empty($delete)){
         $form->display();
-        echo $OUTPUT->render_from_template('local_miguelplugin/tabla', []);
+        $datos = $DB->get_records('local_miguelplugin');
+        $datos = array_values($datos); //Les quita las keys
+        $html = html_writer::div('test html tag');
+        $booleano = false;
+        echo $OUTPUT->render_from_template('local_miguelplugin/tabla', [
+            'datos' => $datos,
+            'html' => $html,
+            'booleano' => $booleano
+        ]);
     }
     if(!empty($confirm)){
         echo $OUTPUT->notification(sprintf('El registro con id %d ha sido borrado', $confirm));

@@ -26,5 +26,5 @@ defined('MOODLE_INTERNAL') || die();
 
 /** @var stdClass $plugin */
 $plugin->component = 'local_miguelplugin';
-$plugin->version = 2022020701;     // The current module version (Date: YYYYMMDDXX).
+$plugin->version = 2022020803;     // The current module version (Date: YYYYMMDDXX).
 $plugin->requires = 2020061519;    // Requires this Moodle version.
