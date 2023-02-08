@@ -54,6 +54,10 @@ $PAGE->set_context($context);
 $PAGE->set_url($url);
 $PAGE->set_heading('Prueba formulario');
 
+$PAGE->set_pagelayout('standard');
+$PAGE->blocks->add_region('content');
+
+
 //Import JS
 $PAGE->requires->js_call_amd('local_miguelplugin/main', 'init', 
     [['username' => $USER->username, 'id' => $USER->id]]);
@@ -83,6 +87,7 @@ $table->is_downloading($download, 'reportecustom', 'reportexcel');
 if (!$table->is_downloading()) {
     // Start print page
     echo $OUTPUT->header();
+    echo $OUTPUT->custom_block_region('content');
 
     $data = $form->get_data();
     if ($data) {
@@ -155,6 +160,7 @@ if (!$table->is_downloading()) {
 
 
 if (!$table->is_downloading()) {
+    
     echo $OUTPUT->footer();
 }
 // End print page
